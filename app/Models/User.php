@@ -5,16 +5,22 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes;
 
 
+    protected $fillable = [
+        "username",
+        "email",
+        "password",
+        "role"
+    ];
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     protected $casts = [
