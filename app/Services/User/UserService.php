@@ -21,4 +21,8 @@ class UserService
 
     }
 
+    public function get(string $id): UserDto
+    {
+        return UserDto::fromArray([]);
+    }
 }
