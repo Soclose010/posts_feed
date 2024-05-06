@@ -8,16 +8,18 @@ use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Auth;
 
 class UserDto
 {
-    public readonly string $id;
-    public readonly string $username;
-    public readonly string $email;
-    public readonly string $password;
-    public readonly UserRole $role;
-    public readonly CarbonInterface $created_at;
-    public readonly CarbonInterface $updated_at;
+    public readonly ?string $id;
+    public readonly ?string $username;
+    public readonly ?string $email;
+    public readonly ?string $password;
+    public readonly ?string $oldPassword;
+    public readonly ?UserRole $role;
+    public readonly ?CarbonInterface $created_at;
+    public readonly ?CarbonInterface $updated_at;
 
     private function __construct()
     {
@@ -55,11 +57,25 @@ class UserDto
     public static function fromUpdateRequest(UserUpdateRequest $request): self
     {
         $dto = new self();
-        $dto->id = $request->validated("id");
+        $dto->id = Auth::id();
         $dto->username = $request->validated("username");
         $dto->email = $request->validated("email");
         $dto->password = $request->validated("password");
+        $dto->oldPassword = $request->validated("old_password");
         return $dto;
     }
 
+    public static function fromArray(array $data): self
+    {
+        $dto = new self();
+        $dto->id = $data["id"] ?? null;
+        $dto->username = $data["username"] ?? null;
+        $dto->email = $data["email"] ?? null;
+        $dto->password = $data["password"] ?? null;
+        $dto->oldPassword = $data["old_password"] ?? null;
+        $dto->role = $data["role"] ?? null;
+        $dto->created_at = $data["created_at"] ?? null;
+        $dto->updated_at = $data["updated_at"] ?? null;
+        return $dto;
+    }
 }
