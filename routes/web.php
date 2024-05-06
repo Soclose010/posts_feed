@@ -5,39 +5,35 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get("/", [PostController::class, "index"]);
-Route::resource("users", UserController::class)->except([
-    "index"
-]);
+Route::get("/", [PostController::class, "index"])->name("index");
 
 Route::controller(UserController::class)->prefix("users")->group(function (){
-    Route::get("/{user}", "show");
+    Route::get("/{user}", "show")->name("users.show");
 
     Route::middleware("guest")->group(function (){
-        Route::get("/create", "create");
-        Route::post("/", "store");
+        Route::post("/", "store")->name("users.store");
     });
     Route::middleware("auth")->group(function ()
     {
-        Route::get("/{user}/edit", "edit");
-        Route::put("/{user}", "update");
-        Route::delete("/{post}", "destroy");
+        Route::get("/{user}/edit", "edit")->name("users.edit");
+        Route::put("/{user}", "update")->name("users.update");
+        Route::delete("/{user}", "destroy")->name("users.destroy");
     });
 });
 
 Route::controller(PostController::class)->prefix("posts")->group(function (){
-    Route::get("/{post}", "show");
+    Route::get("/{post}", "show")->name("posts.show");
     Route::middleware("auth")->group(function ()
     {
-        Route::get("/create", "create");
-        Route::post("/", "store");
-        Route::get("/{post}/edit", "edit");
-        Route::put("/{post}", "update");
-        Route::delete("/{post}", "destroy");
+        Route::get("/create", "create")->name("posts.create");
+        Route::post("/", "store")->name("posts.store");
+        Route::get("/{post}/edit", "edit")->name("posts.edit");
+        Route::put("/{post}", "update")->name("posts.update");
+        Route::delete("/{post}", "destroy")->name("posts.destroy");
     });
 });
 
 Route::controller(AuthController::class)->prefix("auth")->group(function (){
-    Route::post("/login", "login")->middleware("guest");
-    Route::get("/logout", "logout")->middleware("auth");
+    Route::post("/login", "login")->middleware("guest")->name("auth.login");
+    Route::get("/logout", "logout")->middleware("auth")->name("auth.logout");
 });
