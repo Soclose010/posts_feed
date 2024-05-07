@@ -2,9 +2,12 @@
 
 namespace App\DataTransferObjects;
 
+use App\Http\Requests\Post\PostCreateRequest;
+use App\Http\Requests\Post\PostUpdateRequest;
 use App\Models\Post;
 use Carbon\CarbonInterface;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class PostDto extends Dto
 {
@@ -19,30 +22,33 @@ class PostDto extends Dto
     {
     }
 
-    public static function fromCreateRequest(Request $request, string $user_id): self
+    public static function fromCreateRequest(PostCreateRequest $request, string $user_id): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->title = $request->validated("title");
         $dto->body = $request->validated("body");
         $dto->user_id = $user_id;
         return $dto;
     }
 
-    public static function fromModel(Post $post): self
+    public static function fromModel(Model $model): static
     {
-        $dto = new self();
-        $dto->id = $post->id;
-        $dto->title = $post->title;
-        $dto->body = $post->body;
-        $dto->user_id = $post->user_id;
-        $dto->created_at = $post->created_at;
-        $dto->updated_at = $post->updated_at;
+        if (!$model instanceof Post) {
+            throw new InvalidArgumentException();
+        }
+        $dto = new static();
+        $dto->id = $model->id;
+        $dto->title = $model->title;
+        $dto->body = $model->body;
+        $dto->user_id = $model->user_id;
+        $dto->created_at = $model->created_at;
+        $dto->updated_at = $model->updated_at;
         return $dto;
     }
 
-    public static function fromUpdateRequest(Request $request, string $id, string $user_id): self
+    public static function fromUpdateRequest(PostUpdateRequest $request, string $id, string $user_id): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->id = $id;
         $dto->title = $request->validated("title");
         $dto->body = $request->validated("title");
@@ -50,9 +56,9 @@ class PostDto extends Dto
         return $dto;
     }
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->id = $data["id"] ?? null;
         $dto->title = $data["title"] ?? null;
         $dto->body = $data["body"] ?? null;

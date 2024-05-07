@@ -8,6 +8,8 @@ use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class UserDto extends Dto
 {
@@ -23,17 +25,17 @@ class UserDto extends Dto
     {
     }
 
-    public static function fromAuthRequest(AuthRequest $request): self
+    public static function fromAuthRequest(AuthRequest $request): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->email = $request->validated("email");
         $dto->password = $request->validated("password");
         return $dto;
     }
 
-    public static function fromCreateRequest(UserCreateRequest $request): self
+    public static function fromCreateRequest(UserCreateRequest $request): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->username = $request->validated("username");
         $dto->email = $request->validated("email");
         $dto->password = $request->validated("password");
@@ -41,21 +43,24 @@ class UserDto extends Dto
         return $dto;
     }
 
-    public static function fromModel(User $user): self
+    public static function fromModel(Model $model): static
     {
-        $dto = new self();
-        $dto->id = $user->id;
-        $dto->username = $user->username;
-        $dto->email = $user->email;
-        $dto->role = $user->role;
-        $dto->created_at = $user->created_at;
-        $dto->updated_at = $user->updated_at;
+        if (!$model instanceof User) {
+            throw new InvalidArgumentException();
+        }
+        $dto = new static();
+        $dto->id = $model->id;
+        $dto->username = $model->username;
+        $dto->email = $model->email;
+        $dto->role = $model->role;
+        $dto->created_at = $model->created_at;
+        $dto->updated_at = $model->updated_at;
         return $dto;
     }
 
-    public static function fromUpdateRequest(UserUpdateRequest $request, string $id): self
+    public static function fromUpdateRequest(UserUpdateRequest $request, string $id): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->id = $id;
         $dto->username = $request->validated("username");
         $dto->email = $request->validated("email");
@@ -63,9 +68,9 @@ class UserDto extends Dto
         return $dto;
     }
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
-        $dto = new self();
+        $dto = new static();
         $dto->id = $data["id"] ?? null;
         $dto->username = $data["username"] ?? null;
         $dto->email = $data["email"] ?? null;
