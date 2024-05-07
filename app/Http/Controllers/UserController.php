@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTransferObjects\UserDto;
+use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Services\Auth\AuthService;
@@ -42,7 +43,14 @@ class UserController extends Controller
     public function update(UserUpdateRequest $request, string $id): void
     {
         $dto = UserDto::fromUpdateRequest($request, $id);
-        $userDto = $this->userService->update($dto);
+        try {
+            $userDto = $this->userService->update($dto);
+        }
+        catch (ExistedEmailException)
+        {
+            redirect()->back()->withErrors([]);
+            return;
+        }
         redirect(route("users.show",[$userDto->id]));
     }
 
