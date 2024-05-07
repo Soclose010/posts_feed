@@ -9,7 +9,7 @@ use App\Http\Requests\User\UserUpdateRequest;
 use App\Models\User;
 use Carbon\CarbonInterface;
 
-class UserDto
+class UserDto extends Dto
 {
     public readonly ?string $id;
     public readonly ?string $username;
@@ -74,10 +74,5 @@ class UserDto
         $dto->created_at = $data["created_at"] ?? null;
         $dto->updated_at = $data["updated_at"] ?? null;
         return $dto;
-    }
-
-    public function toArray(): array
-    {
-        return get_object_vars($this);
     }
 }
