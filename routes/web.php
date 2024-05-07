@@ -8,28 +8,29 @@ use Illuminate\Support\Facades\Route;
 Route::get("/", [PostController::class, "index"])->name("index");
 
 Route::controller(UserController::class)->prefix("users")->group(function (){
-    Route::get("/{user}", "show")->name("users.show");
+    Route::get("/{id}", "show")->name("users.show");
 
     Route::middleware("guest")->group(function (){
+        Route::get("/create", "create")->name("users.create");
         Route::post("/", "store")->name("users.store");
     });
     Route::middleware("auth")->group(function ()
     {
-        Route::get("/{user}/edit", "edit")->name("users.edit");
-        Route::put("/{user}", "update")->name("users.update");
-        Route::delete("/{user}", "destroy")->name("users.destroy");
+        Route::get("/{id}/edit", "edit")->name("users.edit");
+        Route::put("/{id}", "update")->name("users.update");
+        Route::delete("/{id}", "destroy")->name("users.destroy");
     });
 });
 
 Route::controller(PostController::class)->prefix("posts")->group(function (){
-    Route::get("/{post}", "show")->name("posts.show");
+    Route::get("/{id}", "show")->name("posts.show");
     Route::middleware("auth")->group(function ()
     {
         Route::get("/create", "create")->name("posts.create");
         Route::post("/", "store")->name("posts.store");
-        Route::get("/{post}/edit", "edit")->name("posts.edit");
-        Route::put("/{post}", "update")->name("posts.update");
-        Route::delete("/{post}", "destroy")->name("posts.destroy");
+        Route::get("/{id}/edit", "edit")->name("posts.edit");
+        Route::put("/{id}", "update")->name("posts.update");
+        Route::delete("/{id}", "destroy")->name("posts.destroy");
     });
 });
 
