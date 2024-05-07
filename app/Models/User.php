@@ -32,4 +32,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class, "user_id","id");
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role == UserRole::Admin;
+    }
 }
