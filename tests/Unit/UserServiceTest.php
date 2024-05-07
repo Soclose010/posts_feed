@@ -6,6 +6,7 @@ use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Exceptions\ExistedEmailException;
 use App\Services\User\UserService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -72,14 +73,13 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto = $this->service->create($createDto);
-
+        $this->actingAs($this->service->getUser($userDto->id));
         $dto = UserDto::fromArray([
             "id" => $userDto->id,
             "username" => "new aboba",
             "email" => "new email",
         ]);
-        $this->service->update($dto);
-        $updatedUserDto = $this->service->get($userDto->id);
+        $updatedUserDto = $this->service->update($dto);
         $this->assertEquals($dto->username, $updatedUserDto->username);
         $this->assertEquals($dto->email, $updatedUserDto->email);
 
@@ -88,9 +88,67 @@ class UserServiceTest extends TestCase
             "old_password" => "1234",
             "password" => "333"
         ]);
-        $this->service->update($dto);
-        $updatedUserDto = $this->service->get($userDto->id);
+        $updatedUserDto = $this->service->update($dto);
         $this->assertTrue(Hash::check($dto->password, $this->service->getUser($updatedUserDto->id)->password));
+    }
+
+    public function test_user_update_not_own_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba2@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $userDto2 = $this->service->create($createDto);
+
+        $dto = UserDto::fromArray([
+            "id" => $userDto2->id,
+            "username" => "new aboba",
+            "email" => "new email",
+        ]);
+        $this->expectException(AuthorizationException::class);
+        $this->service->update($dto);
+    }
+
+    public function test_admin_update_another_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::Admin
+        ]);
+
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba2@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $userDto2 = $this->service->create($createDto);
+
+        $dto = UserDto::fromArray([
+            "id" => $userDto2->id,
+            "username" => "new aboba",
+            "email" => "new email",
+        ]);
+        $updatedUserDto = $this->service->update($dto);
+        $this->assertEquals($dto->username, $updatedUserDto->username);
+        $this->assertEquals($dto->email, $updatedUserDto->email);
     }
 
     public function test_user_update_exist_email()
@@ -103,7 +161,7 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto1 = $this->service->create($createDto1);
-
+        $this->actingAs($this->service->getUser($userDto1->id));
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
             "email" => "aboba2@abobus.com",
@@ -130,8 +188,54 @@ class UserServiceTest extends TestCase
             "role" => UserRole::User
         ]);
         $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
         $this->service->delete($userDto->id);
         $userDto = $this->service->get($userDto->id);
+        $this->assertNull($userDto);
+    }
+
+    public function test_user_delete_another_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+
+        $createDto2 = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba2@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $userDto2 = $this->service->create($createDto2);
+        $this->expectException(AuthorizationException::class);
+        $this->service->delete($userDto2->id);
+    }
+
+    public function test_admin_delete_another_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::Admin
+        ]);
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+
+        $createDto2 = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => "aboba2@abobus.com",
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $userDto2 = $this->service->create($createDto2);
+        $this->service->delete($userDto2->id);
+        $userDto = $this->service->get($userDto2->id);
         $this->assertNull($userDto);
     }
 }
