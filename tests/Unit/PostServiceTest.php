@@ -6,9 +6,10 @@ use App\DataTransferObjects\PostDto;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
-use App\Services\Post\PostService;
-use App\Services\User\UserService;
+use App\Services\CrudServices\Post\PostService;
+use App\Services\CrudServices\User\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
@@ -19,8 +20,8 @@ class PostServiceTest extends TestCase
     private PostService $postService;
     private UserService $userService;
 
-    private User $user;
-    private User $admin;
+    private Model $user;
+    private Model $admin;
 
     protected function setUp(): void
     {
@@ -61,7 +62,7 @@ class PostServiceTest extends TestCase
             "id" => $postDto->id,
             "title" => "aboba title 2",
             "body" => "body abobus 2",
-            "user_id" => $this->user->id,
+            "editorId" => $this->user->id,
         ]);
         $postDto2 = $this->postService->update($dto2);
         $this->assertEquals($dto2->title, $postDto2->title);
@@ -91,7 +92,8 @@ class PostServiceTest extends TestCase
             "id" => $postDto2->id,
             "title" => "aboba title",
             "body" => "body abobus",
-            "user_id" => $postDto2->user_id
+            "user_id" => $this->admin->id,
+            "editorId" => $this->user->id
         ]);
         $this->expectException(AuthorizationException::class);
         $this->postService->update($dto3);
@@ -112,7 +114,7 @@ class PostServiceTest extends TestCase
             "id" => $postDto->id,
             "title" => "aboba title 2",
             "body" => "body abobus 2",
-            "user_id" => $this->admin->id
+            "editorId" => $this->admin->id
         ]);
         $postDto2 = $this->postService->update($dto2);
         $this->assertEquals($dto2->title, $postDto2->title);
@@ -164,7 +166,7 @@ class PostServiceTest extends TestCase
         $this->assertNull($postDto);
     }
 
-    private function createUser(): User
+    private function createUser(): Model
     {
         $dto = UserDto::fromArray([
             "username" => "ivan",
@@ -172,10 +174,10 @@ class PostServiceTest extends TestCase
             "password" => "123",
             "role" => UserRole::User,
         ]);
-        return $this->userService->getUser($this->userService->create($dto)->id);
+        return $this->userService->getModel($this->userService->create($dto)->id);
     }
 
-    private function createAdmin(): User
+    private function createAdmin(): Model
     {
         $dto = UserDto::fromArray([
             "username" => "ivan",
@@ -183,6 +185,6 @@ class PostServiceTest extends TestCase
             "password" => "123",
             "role" => UserRole::Admin,
         ]);
-        return $this->userService->getUser($this->userService->create($dto)->id);
+        return $this->userService->getModel($this->userService->create($dto)->id);
     }
 }

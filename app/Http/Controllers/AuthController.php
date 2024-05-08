@@ -16,7 +16,7 @@ class AuthController extends Controller
     public function login(AuthRequest $request): void
     {
         $dto = UserDto::fromAuthRequest($request);
-        $this->service->login($dto);
+        $this->service->tryLogin($dto);
         redirect(route("index"));
     }
 

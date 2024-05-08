@@ -6,7 +6,8 @@ use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Services\Auth\AuthService;
-use App\Services\User\UserService;
+use App\Services\CrudServices\User\UserService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
@@ -15,7 +16,7 @@ class AuthServiceTest extends TestCase
     use DatabaseMigrations;
     private AuthService $authService;
     private UserService $userService;
-    private User $user;
+    private Model $user;
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,7 +31,7 @@ class AuthServiceTest extends TestCase
             "email" => $this->user->email,
             "password" => "123"
         ]);
-        $this->authService->login($dto);
+        $this->authService->tryLogin($dto);
         $this->assertAuthenticated();
     }
 
@@ -41,7 +42,7 @@ class AuthServiceTest extends TestCase
         $this->assertGuest();
     }
 
-    private function createUser(): User
+    private function createUser(): Model
     {
         $dto = UserDto::fromArray([
             "username" => "ivan",
@@ -49,6 +50,7 @@ class AuthServiceTest extends TestCase
             "password" => "123",
             "role" => UserRole::User,
         ]);
-        return $this->userService->getUser($this->userService->create($dto)->id);
+
+        return $this->userService->getModel($this->userService->create($dto)->id);
     }
 }

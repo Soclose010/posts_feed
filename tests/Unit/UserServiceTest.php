@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Exceptions\ExistedEmailException;
-use App\Services\User\UserService;
+use App\Services\CrudServices\User\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +35,7 @@ class UserServiceTest extends TestCase
         $this->assertNotNull($resultDto->id);
         $this->assertEquals($createDto->username, $resultDto->username);
         $this->assertEquals($createDto->email, $resultDto->email);
-        $this->assertTrue(Hash::check($createDto->password, $this->service->getUser($resultDto->id)->password));
+        $this->assertTrue(Hash::check($createDto->password, $this->service->getModel($resultDto->id)->password));
         $this->assertEquals(UserRole::User, $resultDto->role);
         $this->assertNotNull($resultDto->created_at);
         $this->assertNotNull($resultDto->updated_at);
@@ -60,7 +60,7 @@ class UserServiceTest extends TestCase
         $resultDto = $this->service->create($createDto);
         $this->assertEquals($createDto->username, $resultDto->username);
         $this->assertEquals($createDto->email, $resultDto->email);
-        $this->assertTrue(Hash::check($createDto->password, $this->service->getUser($resultDto->id)->password));
+        $this->assertTrue(Hash::check($createDto->password, $this->service->getModel($resultDto->id)->password));
     }
 
     public function test_user_update()
@@ -73,7 +73,7 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
         $dto = UserDto::fromArray([
             "id" => $userDto->id,
             "username" => "new aboba",
@@ -89,7 +89,7 @@ class UserServiceTest extends TestCase
             "password" => "333"
         ]);
         $updatedUserDto = $this->service->update($dto);
-        $this->assertTrue(Hash::check($dto->password, $this->service->getUser($updatedUserDto->id)->password));
+        $this->assertTrue(Hash::check($dto->password, $this->service->getModel($updatedUserDto->id)->password));
     }
 
     public function test_user_update_not_own_user()
@@ -102,7 +102,7 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
 
         $createDto = UserDto::fromArray([
             "username" => "aboba",
@@ -131,7 +131,7 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
 
         $createDto = UserDto::fromArray([
             "username" => "aboba",
@@ -161,7 +161,7 @@ class UserServiceTest extends TestCase
         ]);
 
         $userDto1 = $this->service->create($createDto1);
-        $this->actingAs($this->service->getUser($userDto1->id));
+        $this->actingAs($this->service->getModel($userDto1->id));
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
             "email" => "aboba2@abobus.com",
@@ -188,7 +188,7 @@ class UserServiceTest extends TestCase
             "role" => UserRole::User
         ]);
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
         $this->service->delete($userDto->id);
         $userDto = $this->service->get($userDto->id);
         $this->assertNull($userDto);
@@ -203,7 +203,7 @@ class UserServiceTest extends TestCase
             "role" => UserRole::User
         ]);
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
 
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
@@ -225,7 +225,7 @@ class UserServiceTest extends TestCase
             "role" => UserRole::Admin
         ]);
         $userDto = $this->service->create($createDto);
-        $this->actingAs($this->service->getUser($userDto->id));
+        $this->actingAs($this->service->getModel($userDto->id));
 
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",

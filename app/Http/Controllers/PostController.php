@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTransferObjects\PostDto;
 use App\Http\Requests\Post\PostCreateRequest;
 use App\Http\Requests\Post\PostUpdateRequest;
-use App\Services\Post\PostService;
+use App\Services\CrudServices\Post\PostService;
 use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
