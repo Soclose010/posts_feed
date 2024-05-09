@@ -15,7 +15,6 @@ class PostDto extends Dto
     public readonly ?string $title;
     public readonly ?string $body;
     public readonly ?string $user_id;
-    public readonly ?string $editorId;
     public readonly ?CarbonInterface $created_at;
     public readonly ?CarbonInterface $updated_at;
 
@@ -47,13 +46,12 @@ class PostDto extends Dto
         return $dto;
     }
 
-    public static function fromUpdateRequest(PostUpdateRequest $request, string $id, string $editorId): static
+    public static function fromUpdateRequest(PostUpdateRequest $request, string $id): static
     {
         $dto = new static();
         $dto->id = $id;
         $dto->title = $request->validated("title");
         $dto->body = $request->validated("title");
-        $dto->editorId = $editorId;
         return $dto;
     }
 
