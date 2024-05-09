@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActionService
 {
-    public static function write(?string $actor, string $owner, string $action, ?Model $old, ?Model $new): void
+    public static function write(?string $actor, string $owner, Action $action, ?Model $old, ?Model $new): void
     {
         Action::create([
             "actor" => $actor,
