@@ -27,7 +27,8 @@ class UserController extends Controller
     {
         $dto = UserDto::fromCreateRequest($request);
         $userDto = $this->userService->create($dto);
-        $this->authService->login($userDto);
+        $user = $this->userService->getUser($userDto->id);
+        $this->authService->login($user);
         redirect(route("index"));
     }
     public function show(string $id)

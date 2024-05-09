@@ -35,6 +35,6 @@ Route::controller(PostController::class)->prefix("posts")->group(function (){
 });
 
 Route::controller(AuthController::class)->prefix("auth")->group(function (){
-    Route::post("/login", "login")->middleware("guest")->name("auth.login");
+    Route::post("/tryLogin", "tryLogin")->middleware("guest")->name("auth.tryLogin");
     Route::get("/logout", "logout")->middleware("auth")->name("auth.logout");
 });

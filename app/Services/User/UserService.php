@@ -5,10 +5,13 @@ namespace App\Services\User;
 use App\DataTransferObjects\UserDto;
 use App\Exceptions\ExistedEmailException;
 use App\Models\User;
+use App\Traits\FilterFieldsTrait;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Gate;
 
 class UserService
 {
+    use FilterFieldsTrait;
     public function create(UserDto $dto): UserDto
     {
         $user = User::create($this->fieldsToUpdate($dto));
@@ -18,6 +21,7 @@ class UserService
     public function update(UserDto $dto): UserDto
     {
         $user = $this->getUser($dto->id);
+        Gate::authorize("edit", $user->id);
         try {
             $user = tap($user->fill($this->fieldsToUpdate($dto)))->save();
         }
@@ -30,6 +34,7 @@ class UserService
 
     public function delete(string $id): void
     {
+        Gate::authorize("edit", $id);
         User::where('id', $id)->delete();
     }
 
@@ -44,12 +49,5 @@ class UserService
     public function getUser(string $id): ?User
     {
         return User::find($id);
-    }
-
-    private function fieldsToUpdate(UserDto $dto): array
-    {
-        return array_filter($dto->toArray(), function ($value) {
-            return $value !== null;
-        });
     }
 }

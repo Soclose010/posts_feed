@@ -22,12 +22,12 @@ class PostDto extends Dto
     {
     }
 
-    public static function fromCreateRequest(PostCreateRequest $request, string $user_id): static
+    public static function fromCreateRequest(PostCreateRequest $request, string $userId): static
     {
         $dto = new static();
         $dto->title = $request->validated("title");
         $dto->body = $request->validated("body");
-        $dto->user_id = $user_id;
+        $dto->user_id = $userId;
         return $dto;
     }
 
@@ -46,13 +46,12 @@ class PostDto extends Dto
         return $dto;
     }
 
-    public static function fromUpdateRequest(PostUpdateRequest $request, string $id, string $user_id): static
+    public static function fromUpdateRequest(PostUpdateRequest $request, string $id): static
     {
         $dto = new static();
         $dto->id = $id;
         $dto->title = $request->validated("title");
         $dto->body = $request->validated("title");
-        $dto->user_id = $user_id;
         return $dto;
     }
 
@@ -65,6 +64,7 @@ class PostDto extends Dto
         $dto->user_id = $data["user_id"] ?? null;
         $dto->created_at = $data["created_at"] ?? null;
         $dto->updated_at = $data["updated_at"] ?? null;
+        $dto->editorId = $data["editorId"] ?? null;
         return $dto;
     }
 }
