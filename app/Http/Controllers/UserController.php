@@ -7,7 +7,7 @@ use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Services\Auth\AuthService;
-use App\Services\CrudServices\User\UserService;
+use App\Services\User\UserService;
 
 class UserController extends Controller
 {
@@ -27,7 +27,7 @@ class UserController extends Controller
     {
         $dto = UserDto::fromCreateRequest($request);
         $userDto = $this->userService->create($dto);
-        $user = $this->userService->getModel($userDto->id);
+        $user = $this->userService->getUser($userDto->id);
         $this->authService->login($user);
         redirect(route("index"));
     }
