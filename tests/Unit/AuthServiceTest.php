@@ -6,7 +6,7 @@ use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Services\Auth\AuthService;
-use App\Services\CrudServices\User\UserService;
+use App\Services\User\UserService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -16,7 +16,7 @@ class AuthServiceTest extends TestCase
     use DatabaseMigrations;
     private AuthService $authService;
     private UserService $userService;
-    private Model $user;
+    private User $user;
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,6 +51,6 @@ class AuthServiceTest extends TestCase
             "role" => UserRole::User,
         ]);
 
-        return $this->userService->getModel($this->userService->create($dto)->id);
+        return $this->userService->getUser($this->userService->create($dto)->id);
     }
 }

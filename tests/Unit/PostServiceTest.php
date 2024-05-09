@@ -6,8 +6,8 @@ use App\DataTransferObjects\PostDto;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
-use App\Services\CrudServices\Post\PostService;
-use App\Services\CrudServices\User\UserService;
+use App\Services\Post\PostService;
+use App\Services\User\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -20,8 +20,8 @@ class PostServiceTest extends TestCase
     private PostService $postService;
     private UserService $userService;
 
-    private Model $user;
-    private Model $admin;
+    private User $user;
+    private User $admin;
 
     protected function setUp(): void
     {
@@ -174,7 +174,7 @@ class PostServiceTest extends TestCase
             "password" => "123",
             "role" => UserRole::User,
         ]);
-        return $this->userService->getModel($this->userService->create($dto)->id);
+        return $this->userService->getUser($this->userService->create($dto)->id);
     }
 
     private function createAdmin(): Model
@@ -185,6 +185,6 @@ class PostServiceTest extends TestCase
             "password" => "123",
             "role" => UserRole::Admin,
         ]);
-        return $this->userService->getModel($this->userService->create($dto)->id);
+        return $this->userService->getUser($this->userService->create($dto)->id);
     }
 }
