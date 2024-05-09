@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\DataTransferObjects\PostDto;
+use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\Post\PostCreateRequest;
 use App\Http\Requests\Post\PostUpdateRequest;
-use App\Services\CrudServices\Post\PostService;
+use App\Services\Post\PostService;
 use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
@@ -43,9 +44,12 @@ class PostController extends Controller
         //
     }
 
+    /**
+     * @throws ExistedEmailException
+     */
     public function update(PostUpdateRequest $request, string $id): void
     {
-        $dto = PostDto::fromUpdateRequest($request, $id, Auth::id());
+        $dto = PostDto::fromUpdateRequest($request, $id);
         $postDto = $this->service->update($dto);
         redirect(route("post.show", $postDto->id));
     }
