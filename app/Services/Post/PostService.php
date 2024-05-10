@@ -3,55 +3,95 @@
 namespace App\Services\Post;
 
 use App\DataTransferObjects\PostDto;
+use App\Enums\Action;
+use App\Enums\FieldName;
 use App\Exceptions\ExistedEmailException;
 use App\Models\Post;
+use App\Services\Action\ActionServiceInterface;
 use App\Traits\FilterFieldsTrait;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class PostService
 {
     use FilterFieldsTrait;
+
+    public function __construct(private readonly ActionServiceInterface $actionService)
+    {
+    }
+
     public function create(PostDto $dto): PostDto
     {
-        $user = Post::create($this->fieldsToUpdate($dto));
-        return PostDto::fromModel($user);
+        $post = Post::create($this->fieldsToUpdate($dto));
+        $this->actionService::write(
+            Auth::id(),
+            Auth::id(),
+            Action::Create,
+            null,
+            $post
+        );
+        return PostDto::fromModel($post);
     }
 
     /**
      * @throws ExistedEmailException
+     * @throws NotFound
      */
     public function update(PostDto $dto): PostDto
     {
-        $post = $this->getPost($dto->id);
+        $post = $oldPost = $this->getPost($dto->id);
         Gate::authorize("edit", $post->user_id);
         try {
             $post = tap($post->fill($this->fieldsToUpdate($dto)))->save();
-        }
-        catch (UniqueConstraintViolationException)
-        {
+        } catch (UniqueConstraintViolationException) {
             throw new ExistedEmailException();
         }
+        $this->actionService::write(
+            Auth::id(),
+            $post->user_id,
+            Action::Update,
+            $oldPost,
+            $post
+        );
         return PostDto::fromModel($post);
     }
 
+    /**
+     * @throws NotFound
+     */
     public function delete(string $id): void
     {
         $post = $this->getPost($id);
         Gate::authorize("edit", $post->user_id);
+        $oldPost = clone $post;
         $post->delete();
+        $this->actionService::write(
+            Auth::id(),
+            $oldPost->user_id,
+            Action::Delete,
+            $oldPost,
+            null
+        );
     }
 
-    public function get(string $id): ?PostDto
+    /**
+     * @throws NotFound
+     */
+    public function get(string $value, FieldName $field = FieldName::Id): PostDto
     {
-        if ($post = Post::where("id", $id)->first()) {
-            return PostDto::fromModel($post);
+        return PostDto::fromModel($this->getPost($value, $field));
+    }
+
+    /**
+     * @throws NotFound
+     */
+    public function getPost(string $id, FieldName $field = FieldName::Id): Post
+    {
+        if (!$post = Post::where($field->value, $id)->first()) {
+            throw new NotFound();
         }
-        return null;
-    }
-
-    public function getPost(string $id): ?Post
-    {
-        return Post::find($id);
+        return $post;
     }
 }
