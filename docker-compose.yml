@@ -35,3 +35,13 @@ services:
             - POSTGRES_DB=laravel
         container_name: app_db
 
+    npm:
+        build:
+            context: .
+            dockerfile: .docker/npm/Dockerfile
+        container_name: npm
+        volumes:
+            - ./:/var/www/
+        ports:
+            - "5173:5173"
+
