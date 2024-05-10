@@ -5,10 +5,14 @@ namespace Tests\Unit;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Exceptions\ExistedEmailException;
+use App\Services\Action\ActionServiceInterface;
 use App\Services\User\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Mockery\MockInterface;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 use Tests\TestCase;
 
 class UserServiceTest extends TestCase
@@ -20,14 +24,44 @@ class UserServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new UserService();
+        $this->mock(ActionServiceInterface::class, function (MockInterface $mock) {
+            $mock->shouldReceive("write")->andReturns();
+        });
+        $this->service = $this->app->make(UserService::class);
+    }
+
+    public function test_get_exist_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => fake()->email(),
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $createdUserDto = $this->service->create($createDto);
+        $userDto = $this->service->get($createdUserDto->id);
+        $this->assertEquals($createdUserDto, $userDto);
+    }
+
+    public function test_get_non_exist_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => fake()->email(),
+            "password" => "1234",
+            "role" => UserRole::User
+        ]);
+        $createdUserDto = $this->service->create($createDto);
+        $id = Str::uuid();
+        $this->expectException(NotFound::class);
+        $userDto = $this->service->get($id);
     }
 
     public function test_user_create()
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -43,17 +77,16 @@ class UserServiceTest extends TestCase
 
     public function test_user_create_exists_email()
     {
-
         $createDto = UserDto::fromArray([
             "username" => "1",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
         $this->service->create($createDto);
         $createDto = UserDto::fromArray([
             "username" => "2",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "12345",
             "role" => UserRole::User
         ]);
@@ -67,7 +100,7 @@ class UserServiceTest extends TestCase
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -96,7 +129,7 @@ class UserServiceTest extends TestCase
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -106,7 +139,7 @@ class UserServiceTest extends TestCase
 
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -125,7 +158,7 @@ class UserServiceTest extends TestCase
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::Admin
         ]);
@@ -135,7 +168,7 @@ class UserServiceTest extends TestCase
 
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -144,7 +177,7 @@ class UserServiceTest extends TestCase
         $dto = UserDto::fromArray([
             "id" => $userDto2->id,
             "username" => "new aboba",
-            "email" => "new email",
+            "email" => fake()->email(),
         ]);
         $updatedUserDto = $this->service->update($dto);
         $this->assertEquals($dto->username, $updatedUserDto->username);
@@ -155,7 +188,7 @@ class UserServiceTest extends TestCase
     {
         $createDto1 = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -164,7 +197,7 @@ class UserServiceTest extends TestCase
         $this->actingAs($this->service->getUser($userDto1->id));
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -179,26 +212,68 @@ class UserServiceTest extends TestCase
         $this->service->update($dto);
     }
 
+    /**
+     * @throws NotFound
+     * @throws ExistedEmailException
+     */
+    public function test_update_non_exist_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => fake()->email(),
+            "password" => "1234",
+            "role" => UserRole::Admin
+        ]);
+
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+        $id = Str::uuid();
+        $dto = UserDto::fromArray([
+            "id" => $id,
+            "username" => "new aboba",
+        ]);
+        $this->expectException(NotFound::class);
+        $this->service->update($dto);
+    }
+
+    /**
+     * @throws NotFound
+     */
     public function test_user_delete()
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
         $userDto = $this->service->create($createDto);
         $this->actingAs($this->service->getUser($userDto->id));
         $this->service->delete($userDto->id);
-        $userDto = $this->service->get($userDto->id);
-        $this->assertNull($userDto);
+        $this->expectException(NotFound::class);
+        $this->service->get($userDto->id);
+    }
+
+    public function test_delete_non_exist_user()
+    {
+        $createDto = UserDto::fromArray([
+            "username" => "aboba",
+            "email" => fake()->email(),
+            "password" => "1234",
+            "role" => UserRole::Admin
+        ]);
+        $userDto = $this->service->create($createDto);
+        $this->actingAs($this->service->getUser($userDto->id));
+        $id = Str::uuid();
+        $this->expectException(NotFound::class);
+        $this->service->delete($id);
     }
 
     public function test_user_delete_another_user()
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -207,7 +282,7 @@ class UserServiceTest extends TestCase
 
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
@@ -220,7 +295,7 @@ class UserServiceTest extends TestCase
     {
         $createDto = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::Admin
         ]);
@@ -229,13 +304,13 @@ class UserServiceTest extends TestCase
 
         $createDto2 = UserDto::fromArray([
             "username" => "aboba",
-            "email" => "aboba2@abobus.com",
+            "email" => fake()->email(),
             "password" => "1234",
             "role" => UserRole::User
         ]);
         $userDto2 = $this->service->create($createDto2);
         $this->service->delete($userDto2->id);
-        $userDto = $this->service->get($userDto2->id);
-        $this->assertNull($userDto);
+        $this->expectException(NotFound::class);
+        $this->service->get($userDto2->id);
     }
 }

@@ -6,11 +6,14 @@ use App\DataTransferObjects\PostDto;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Services\Action\ActionServiceInterface;
 use App\Services\Post\PostService;
 use App\Services\User\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Str;
+use Mockery\MockInterface;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 use Tests\TestCase;
 
 class PostServiceTest extends TestCase
@@ -26,10 +29,34 @@ class PostServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->postService = new PostService();
-        $this->userService = new UserService();
+        $this->mock(ActionServiceInterface::class, function (MockInterface $mock) {
+            $mock->shouldReceive("write")->andReturns();
+        });
+        $this->postService = $this->app->make(PostService::class);
+        $this->userService = $this->app->make(UserService::class);
         $this->user = $this->createUser();
         $this->admin = $this->createAdmin();
+    }
+
+    public function test_get_post()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $createdPostDto = $this->postService->create($dto);
+        $postDto = $this->postService->get($createdPostDto->id);
+        $this->assertEquals($createdPostDto, $postDto);
+    }
+
+    public function test_get_non_exist_post()
+    {
+        $this->actingAs($this->user);
+        $id = Str::uuid();
+        $this->expectException(NotFound::class);
+        $this->postService->get($id);
     }
 
     public function test_create_post()
@@ -121,6 +148,26 @@ class PostServiceTest extends TestCase
         $this->assertEquals($dto2->body, $postDto2->body);
     }
 
+    public function test_update_non_exist_post()
+    {
+        $this->actingAs($this->user);
+        $dto1 = PostDto::fromArray([
+            "title" => "aboba title",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto1);
+        $id = Str::uuid();
+        $dto2 = PostDto::fromArray([
+            "id" => $id,
+            "title" => "aboba title 2",
+            "body" => "body abobus 2",
+            "editorId" => $this->user->id,
+        ]);
+        $this->expectException(NotFound::class);
+        $this->postService->update($dto2);
+    }
+
     public function test_delete_post()
     {
         $this->actingAs($this->user);
@@ -131,8 +178,22 @@ class PostServiceTest extends TestCase
         ]);
         $postDto = $this->postService->create($dto);
         $this->postService->delete($postDto->id);
-        $postDto = $this->postService->get($postDto->id);
-        $this->assertNull($postDto);
+        $this->expectException(NotFound::class);
+        $this->postService->get($postDto->id);
+    }
+
+    public function test_delete_non_exist_post()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $id = Str::uuid();
+        $this->expectException(NotFound::class);
+        $this->postService->delete($id);
     }
 
     public function test_delete_not_own_post_by_user()
@@ -162,11 +223,11 @@ class PostServiceTest extends TestCase
 
         $this->actingAs($this->admin);
         $this->postService->delete($postDto->id);
-        $postDto = $this->postService->get($postDto->id);
-        $this->assertNull($postDto);
+        $this->expectException(NotFound::class);
+        $this->postService->get($postDto->id);
     }
 
-    private function createUser(): Model
+    private function createUser(): User
     {
         $dto = UserDto::fromArray([
             "username" => "ivan",
@@ -177,7 +238,7 @@ class PostServiceTest extends TestCase
         return $this->userService->getUser($this->userService->create($dto)->id);
     }
 
-    private function createAdmin(): Model
+    private function createAdmin(): User
     {
         $dto = UserDto::fromArray([
             "username" => "ivan",
