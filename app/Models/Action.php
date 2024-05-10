@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\Action as ActionEnum;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Action extends Model
@@ -16,5 +17,9 @@ class Action extends Model
         "old",
         "new",
         "action"
+    ];
+
+    protected $casts = [
+        "action" => ActionEnum::class
     ];
 }
