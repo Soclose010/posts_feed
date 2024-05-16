@@ -2,10 +2,8 @@
 FROM node:20-alpine
 
 WORKDIR /var/www
-ADD . /var/www
+ADD package.json /var/www
 
-RUN npm install
-
-EXPOSE 5252
+RUN npm install --save-dev
 
 ENTRYPOINT ["npm", "run", "dev"]
