@@ -8,6 +8,8 @@ use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Services\Auth\AuthService;
 use App\Services\User\UserService;
+use Illuminate\Http\RedirectResponse;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class UserController extends Controller
 {
@@ -20,16 +22,19 @@ class UserController extends Controller
 
     public function create()
     {
-        //
+        return view('layouts.users.create');
     }
 
-    public function store(UserCreateRequest $request): void
+    /**
+     * @throws NotFound
+     */
+    public function store(UserCreateRequest $request): RedirectResponse
     {
         $dto = UserDto::fromCreateRequest($request);
         $userDto = $this->userService->create($dto);
         $user = $this->userService->getUser($userDto->id);
         $this->authService->login($user);
-        redirect(route("index"));
+        return redirect()->route("index");
     }
     public function show(string $id)
     {
@@ -38,10 +43,10 @@ class UserController extends Controller
 
     public function edit(string $id)
     {
-        //
+        return view("layouts.users.edit");
     }
 
-    public function update(UserUpdateRequest $request, string $id): void
+    public function update(UserUpdateRequest $request, string $id): RedirectResponse
     {
         $dto = UserDto::fromUpdateRequest($request, $id);
         try {
@@ -49,16 +54,21 @@ class UserController extends Controller
         }
         catch (ExistedEmailException)
         {
-            redirect()->back()->withErrors([]);
-            return;
+            throw new \DomainException();
         }
-        redirect(route("users.show",[$userDto->id]));
+        if ($dto->password !== null) {
+            $this->authService->logout();
+        }
+        return redirect()->route("index");
     }
 
-    public function destroy(string $id): void
+    /**
+     * @throws NotFound
+     */
+    public function destroy(string $id): RedirectResponse
     {
         $this->userService->delete($id);
         $this->authService->logout();
-        redirect(route("index"));
+        return redirect()->route("index");
     }
 }

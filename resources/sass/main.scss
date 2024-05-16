@@ -1,4 +1,8 @@
 body {
-    background-color: #31dfd9;
-    font-family: Eraser;
+    font-family: Roboto;
+}
+
+.post__textarea {
+    min-height: 200px;
+    max-height: 300px;
 }

@@ -25,9 +25,9 @@ class UserService
 
     public function create(UserDto $dto): UserDto
     {
-        $user = User::create($this->fieldsToUpdate($dto));
+        $user = User::create($this->filteredFields($dto));
         $this->actionService::write(
-            Auth::id() ?? null,
+            $user->id,
             $user->id,
             Action::Create,
             null,
@@ -45,7 +45,7 @@ class UserService
         $user = $oldUser = $this->getUser($dto->id);
         Gate::authorize("edit", $user->id);
         try {
-            $user = tap($user->fill($this->fieldsToUpdate($dto)))->save();
+            $user = tap($user->fill($this->filteredFields($dto)))->save();
         } catch (UniqueConstraintViolationException) {
             throw new ExistedEmailException();
         }

@@ -24,7 +24,7 @@ class PostService
 
     public function create(PostDto $dto): PostDto
     {
-        $post = Post::create($this->fieldsToUpdate($dto));
+        $post = Post::create($this->filteredFields($dto));
         $this->actionService::write(
             Auth::id(),
             Auth::id(),
@@ -44,7 +44,7 @@ class PostService
         $post = $oldPost = $this->getPost($dto->id);
         Gate::authorize("edit", $post->user_id);
         try {
-            $post = tap($post->fill($this->fieldsToUpdate($dto)))->save();
+            $post = tap($post->fill($this->filteredFields($dto)))->save();
         } catch (UniqueConstraintViolationException) {
             throw new ExistedEmailException();
         }

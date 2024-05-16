@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTransferObjects\UserDto;
 use App\Http\Requests\Auth\AuthRequest;
 use App\Services\Auth\AuthService;
+use Illuminate\Http\RedirectResponse;
 
 class AuthController extends Controller
 {
@@ -13,16 +14,25 @@ class AuthController extends Controller
     {
     }
 
-    public function login(AuthRequest $request): void
+    public function login(AuthRequest $request): RedirectResponse
     {
         $dto = UserDto::fromAuthRequest($request);
-        $this->service->tryLogin($dto);
-        redirect(route("index"));
+        if ($this->service->tryLogin($dto))
+        {
+            $request->session()->regenerate();
+            return redirect()->route("index");
+        }
+        else
+        {
+            return redirect()->back()->withInput()->withErrors([
+                "login" => 1
+            ]);
+        }
     }
 
-    public function logout(): void
+    public function logout(): RedirectResponse
     {
         $this->service->logout();
-        redirect(route("index"));
+        return redirect()->route("index");
     }
 }

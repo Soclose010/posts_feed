@@ -8,11 +8,10 @@ use Illuminate\Support\Facades\Route;
 Route::get("/", [PostController::class, "index"])->name("index");
 
 Route::controller(UserController::class)->prefix("users")->group(function (){
-    Route::get("/{id}", "show")->name("users.show");
 
     Route::middleware("guest")->group(function (){
-        Route::get("/create", "create")->name("users.create");
         Route::post("/", "store")->name("users.store");
+        Route::get("/create", "create")->name("users.create");
     });
     Route::middleware("auth")->group(function ()
     {
@@ -20,10 +19,10 @@ Route::controller(UserController::class)->prefix("users")->group(function (){
         Route::put("/{id}", "update")->name("users.update");
         Route::delete("/{id}", "destroy")->name("users.destroy");
     });
+    Route::get("/{id}", "show")->name("users.show");
 });
 
 Route::controller(PostController::class)->prefix("posts")->group(function (){
-    Route::get("/{id}", "show")->name("posts.show");
     Route::middleware("auth")->group(function ()
     {
         Route::get("/create", "create")->name("posts.create");
@@ -32,9 +31,10 @@ Route::controller(PostController::class)->prefix("posts")->group(function (){
         Route::put("/{id}", "update")->name("posts.update");
         Route::delete("/{id}", "destroy")->name("posts.destroy");
     });
+    Route::get("/{id}", "show")->name("posts.show");
 });
 
 Route::controller(AuthController::class)->prefix("auth")->group(function (){
-    Route::post("/tryLogin", "tryLogin")->middleware("guest")->name("auth.tryLogin");
-    Route::get("/logout", "logout")->middleware("auth")->name("auth.logout");
+    Route::post("/logout", "logout")->middleware("auth")->name("auth.logout");
+    Route::post("/tryLogin", "login")->middleware("guest")->name("auth.tryLogin");
 });
