@@ -25,7 +25,6 @@ Route::controller(UserController::class)->prefix("users")->group(function (){
 Route::controller(PostController::class)->prefix("posts")->group(function (){
     Route::middleware("auth")->group(function ()
     {
-        Route::get("/create", "create")->name("posts.create");
         Route::post("/", "store")->name("posts.store");
         Route::get("/{id}/edit", "edit")->name("posts.edit");
         Route::put("/{id}", "update")->name("posts.update");
