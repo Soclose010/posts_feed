@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,19 @@ class Post extends Model
         "body",
         "user_id"
     ];
+
+    public static function getTableName()
+    {
+        return with(new static)->getTable();
+    }
+
+    public function scopeUsername(Builder $query): Builder
+    {
+        $table = User::getTableName();
+        return $query->
+        addSelect("$table.username")->
+        join("users", "users.id", "=", "posts.user_id");
+    }
 
     public function user()
     {

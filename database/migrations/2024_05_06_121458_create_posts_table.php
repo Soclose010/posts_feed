@@ -17,9 +17,7 @@ return new class extends Migration
             $table->text("body");
             $table->foreignUuid("user_id")
                 ->references("id")
-                ->on("users")
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
+                ->on("users");
             $table->timestamps();
             $table->softDeletes();
         });
