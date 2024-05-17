@@ -12,22 +12,18 @@ class AuthService
     {
         Auth::login($user);
     }
-    public function tryLogin(UserDto $dto): void
+
+    public function tryLogin(UserDto $dto): bool
     {
         $loginData = [
             "email" => $dto->email,
             "password" => $dto->password
         ];
-        if (!Auth::attempt($loginData))
-        {
-            redirect()->back()->withErrors([]);
-        }
+        return Auth::attempt($loginData);
     }
 
     public function logout(): void
     {
         Auth::logout();
     }
-
-
 }

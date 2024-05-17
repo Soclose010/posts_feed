@@ -1,26 +1,29 @@
-FROM php:8.1-fpm
+FROM php:8.1-fpm-alpine
 
-RUN apt-get update && apt-get install -y \
-      apt-utils \
-      libpq-dev \
-      libpng-dev \
-      libzip-dev \
-      zip unzip \
-      git && \
-      docker-php-ext-install pdo_mysql && \
-      docker-php-ext-install bcmath && \
-      docker-php-ext-install gd && \
-      docker-php-ext-install zip && \
-      docker-php-ext-install pdo pdo_pgsql pgsql && \
-      apt-get clean && \
-      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+WORKDIR /var/www
 
-COPY ./.docker/app/php.ini /usr/local/etc/php/conf.d/php.ini
+RUN apk --update add wget \
+    curl \
+    build-base \
+    libmemcached-dev \
+    libmcrypt-dev \
+    libxml2-dev \
+    pcre-dev \
+    zlib-dev \
+    autoconf \
+    cyrus-sasl-dev \
+    libgsasl-dev \
+    oniguruma-dev \
+    openssl \
+    openssl-dev \
+    postgresql-dev
 
-# Install composer
-ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN docker-php-ext-install pdo_pgsql
+
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
 
-WORKDIR /var/www
+RUN rm /var/cache/apk/*
+
+
