@@ -1,0 +1,28 @@
+.theme {
+    position: absolute;
+    &-icon {
+        width: 2.5rem;
+        cursor: pointer;
+    }
+}
+
+.invert {
+    filter: invert(100%);
+}
+@include color-mode(dark) {
+    .sun {
+        display: block;
+    }
+    .moon {
+        display: none;
+    }
+}
+
+@include color-mode(light) {
+    .sun {
+        display: none;
+    }
+    .moon {
+        display: block;
+    }
+}
