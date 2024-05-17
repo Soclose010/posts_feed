@@ -3,6 +3,48 @@ body {
 }
 
 .post__textarea {
-    min-height: 200px;
-    max-height: 300px;
+    max-height: 130px;
+
+    &-tall {
+        height: 250px;
+        max-height: 300px;
+    }
+}
+
+.pagination nav {
+    width: 100%;
+}
+
+@include media-breakpoint-down(lg) {
+    .user__card-buttons {
+        flex-direction: column;
+    }
+    .btn__home {
+        width: auto!important;
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .post__card {
+        width: 75%;
+        margin: auto auto 10px;
+    }
+    .pagination nav {
+        width: auto;
+        margin: auto;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    nav div:last-child {
+        flex-direction: column;
+    }
+    .post__card-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem!important;
+    }
+    .btn {
+        width: auto!important;
+    }
 }
