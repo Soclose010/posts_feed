@@ -9,6 +9,7 @@ use App\Http\Requests\Post\PostUpdateRequest;
 use App\Services\Post\PostService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
@@ -19,7 +20,9 @@ class PostController extends Controller
 
     public function index()
     {
-        return view("index");
+        $postPaginator = $this->service->getPaginate(3);
+        $userId = Auth::id();
+        return view("index", compact("postPaginator", "userId"));
     }
 
     public function create()
@@ -37,12 +40,15 @@ class PostController extends Controller
 
     public function show(string $id)
     {
-        //
+        $postDto = $this->service->getWithUsername($id);
+        return view("layouts.posts.show",compact("postDto"));
     }
 
     public function edit(string $id)
     {
-        //
+        $postDto = $this->service->get($id);
+        Gate::authorize("edit", $postDto->user_id);
+        return view("layouts.posts.edit", compact("postDto"));
     }
 
     /**
@@ -52,12 +58,12 @@ class PostController extends Controller
     {
         $dto = PostDto::fromUpdateRequest($request, $id);
         $postDto = $this->service->update($dto);
-        return redirect()->route("post.show", $postDto->id);
+        return redirect()->route("posts.show", $postDto->id);
     }
 
     public function destroy(string $id): RedirectResponse
     {
         $this->service->delete($id);
-        return redirect()->route("index");
+        return redirect()->back();
     }
 }
