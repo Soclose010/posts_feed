@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,9 +11,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuids, SoftDeletes;
-
-
+    use HasFactory, HasUuids, SoftDeletes, CascadeSoftDeletes;
+    protected $cascadeDeletes = ['posts'];
+    protected $dates = ['deleted_at'];
     protected $fillable = [
         "username",
         "email",
@@ -27,6 +28,11 @@ class User extends Authenticatable
         "role" => UserRole::class,
         'password' => 'hashed',
     ];
+
+    public static function getTableName()
+    {
+        return with(new static)->getTable();
+    }
 
     public function posts()
     {
