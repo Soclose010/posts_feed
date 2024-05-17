@@ -7,15 +7,18 @@ use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Services\Auth\AuthService;
+use App\Services\Post\PostService;
 use App\Services\User\UserService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class UserController extends Controller
 {
     public function __construct(
         private readonly UserService $userService,
-        private readonly AuthService $authService
+        private readonly AuthService $authService,
+        private readonly PostService $postService
     )
     {
     }
@@ -38,19 +41,24 @@ class UserController extends Controller
     }
     public function show(string $id)
     {
-        //
+        $userDto = $this->userService->get($id);
+        $posts = $this->postService->getUserPosts($id);
+        $canEdit = Gate::allows("edit", $id);
+        return view('layouts.users.show', compact("userDto", "posts", "canEdit"));
     }
 
     public function edit(string $id)
     {
-        return view("layouts.users.edit");
+        Gate::authorize("edit", $id);
+        $userDto = $this->userService->get($id);
+        return view("layouts.users.edit", compact("userDto"));
     }
 
     public function update(UserUpdateRequest $request, string $id): RedirectResponse
     {
         $dto = UserDto::fromUpdateRequest($request, $id);
         try {
-            $userDto = $this->userService->update($dto);
+            $this->userService->update($dto);
         }
         catch (ExistedEmailException)
         {
