@@ -10,7 +10,7 @@ class UserCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "username" => "required|string|",
+            "username" => "required|string|unique:users,username",
 			"email" => "required|email|unique:users,email",
 			"password" => ["required", "confirmed", Password::defaults()],
         ];
