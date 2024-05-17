@@ -4,9 +4,10 @@
 
 @section("content")
     <div class="container d-flex justify-content-center">
-        <div class="row mt-5 w-50">
+        <div class="row mt-5 w-50 ">
             <div class="h2 text-center">Регистрация</div>
-            <form class="d-flex flex-column" action="{{route("users.store")}}" method="post">
+            <form class="d-flex flex-column border border-secondary border-2 rounded mb-4 p-4"
+                  action="{{route("users.store")}}" method="post">
                 @csrf
                 <div class="mb-3">
                     <label for="username" class="form-label">Имя пользователя</label>
@@ -41,6 +42,7 @@
                            id="password_conf" placeholder="Пароль" name="password_confirmation" required>
                 </div>
                 <button type="submit" class="btn btn-primary m-auto">Регистрация</button>
+                <a class="btn btn-info text-white m-auto mt-3" href="{{route("index")}}">На главную</a>
             </form>
         </div>
     </div>
