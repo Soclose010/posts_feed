@@ -25,13 +25,13 @@ class UserService
 
     public function create(UserDto $dto): UserDto
     {
-        $user = User::create($this->fieldsToUpdate($dto));
+        $user = User::create($this->filteredFields($dto));
         $this->actionService::write(
-            Auth::id() ?? null,
+            $user->id,
             $user->id,
             Action::Create,
             null,
-            $user
+            $user->toJson()
         );
         return UserDto::fromModel($user);
     }
@@ -42,10 +42,11 @@ class UserService
      */
     public function update(UserDto $dto): UserDto
     {
-        $user = $oldUser = $this->getUser($dto->id);
+        $user = $this->getUser($dto->id);
+        $oldUser = $user->toJson();
         Gate::authorize("edit", $user->id);
         try {
-            $user = tap($user->fill($this->fieldsToUpdate($dto)))->save();
+            $user = tap($user->fill($this->filteredFields($dto)))->save();
         } catch (UniqueConstraintViolationException) {
             throw new ExistedEmailException();
         }
@@ -54,7 +55,7 @@ class UserService
             $user->id,
             Action::Update,
             $oldUser,
-            $user
+            $user->toJson()
         );
         return UserDto::fromModel($user);
     }
@@ -71,7 +72,7 @@ class UserService
             Auth::id(),
             $user->id,
             Action::Delete,
-            $user,
+            $user->toJson(),
             null
         );
     }

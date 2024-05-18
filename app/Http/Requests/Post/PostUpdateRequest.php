@@ -13,4 +13,12 @@ class PostUpdateRequest extends FormRequest
             "body" => "string"
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            "title" => __("title"),
+            "body" => __("body"),
+        ];
+    }
 }

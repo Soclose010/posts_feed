@@ -13,4 +13,12 @@ class PostCreateRequest extends FormRequest
             "body" => "required|string"
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            "title" => __("title"),
+            "body" => __("body"),
+        ];
+    }
 }

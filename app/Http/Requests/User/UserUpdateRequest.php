@@ -10,10 +10,19 @@ class UserUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-			"username" => "string",
-			"email" => "email|unique:users,email",
-            "password" => ["required_with:old_password", Password::defaults()],
-            "old_password" => ["required_with:password", "same:password"],
+			"username" => "sometimes|string|unique:users,username",
+			"email" => "sometimes|email|unique:users,email",
+            "password" => ["sometimes", "required_with:old_password", "confirmed" ,Password::defaults()],
+            "old_password" => ["sometimes", "required_with:password", "same:password"],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            "username" => __("username"),
+            "email" => __("email"),
+            "password" => __("password"),
         ];
     }
 }

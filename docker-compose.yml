@@ -1,37 +1,78 @@
-version: "3"
+version: "3.9"
 
 services:
-    nginx:
-        image: nginx
-        ports:
-            - "5252:80"
+    webserver:
+        image: nginx:1.25-alpine
+        container_name: posts-webserver
+        restart: unless-stopped
         volumes:
-            - ./:/var/www/
-            - ./.docker/nginx/conf.d/:/etc/nginx/conf.d
-        container_name: app_nginx
-        depends_on:
-            - app
+            -   ./:/var/www
+            -   ./.docker/nginx/conf.d/:/etc/nginx/conf.d/
+            -   ./storage/docker/logs/nginx/:/var/log/nginx/
+        ports:
+            - "80:80"
+        networks:
+            -   posts-webserver-network
 
     app:
         build:
             context: .
             dockerfile: ./.docker/app/Dockerfile
+        container_name: posts-app
+        restart: unless-stopped
+        user: ${UID}:${GID}
         volumes:
             - ./:/var/www/
-        container_name: app
+            - ./.docker/app/php.ini:/usr/local/etc/php/conf.d/php.ini
         depends_on:
             - db
+        networks:
+            -   posts-webserver-network
+            -   posts-db-network
 
     db:
-        image: postgres:latest
-        restart: always
+        image: postgres:16.3-alpine
+        container_name: posts-db
+        restart: unless-stopped
         ports:
-            - "3434:5432"
+            - "5432:5432"
         volumes:
-            - ./tmp/postgres-data:/var/lib/postgresql/data
+            - ./storage/docker/db:/var/lib/postgresql/data
         environment:
+            - POSTGRES_DB=${DB_DATABASE}
+            - POSTGRES_USER=${DB_USERNAME}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+        networks:
+            -   posts-db-network
+
+    npm:
+        build:
+            context: .
+            dockerfile: .docker/npm/Dockerfile
+        container_name: posts-npm
+        volumes:
+            - ./:/var/www/
+            - /var/www/node_modules
+        ports:
+            - "5173:5173"
+
+    db-testing:
+        image: postgres:16.3-alpine
+        container_name: posts-db-testing
+        tmpfs:
+            -   /var/lib/postgresql/data
+        restart: unless-stopped
+        ports:
+            - "5433:5432"
+        environment:
+            - POSTGRES_DB=laravel-test
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
-            - POSTGRES_DB=laravel
-        container_name: app_db
+        networks:
+            - posts-db-network
+networks:
+    posts-db-network:
+    posts-webserver-network:
+
+
 

@@ -17,6 +17,7 @@ class PostDto extends Dto
     public readonly ?string $user_id;
     public readonly ?CarbonInterface $created_at;
     public readonly ?CarbonInterface $updated_at;
+    public readonly ?string $username;
 
     private function __construct()
     {
@@ -31,7 +32,7 @@ class PostDto extends Dto
         return $dto;
     }
 
-    public static function fromModel(Model $model): static
+    public static function fromModel(Model $model, bool $needUsername = false): static
     {
         if (!$model instanceof Post) {
             throw new InvalidArgumentException();
@@ -43,6 +44,10 @@ class PostDto extends Dto
         $dto->user_id = $model->user_id;
         $dto->created_at = $model->created_at;
         $dto->updated_at = $model->updated_at;
+        if ($needUsername)
+        {
+            $dto->username = $model->username;
+        }
         return $dto;
     }
 
@@ -51,7 +56,7 @@ class PostDto extends Dto
         $dto = new static();
         $dto->id = $id;
         $dto->title = $request->validated("title");
-        $dto->body = $request->validated("title");
+        $dto->body = $request->validated("body");
         return $dto;
     }
 
@@ -64,7 +69,7 @@ class PostDto extends Dto
         $dto->user_id = $data["user_id"] ?? null;
         $dto->created_at = $data["created_at"] ?? null;
         $dto->updated_at = $data["updated_at"] ?? null;
-        $dto->editorId = $data["editorId"] ?? null;
+        $dto->username = $data["user"] ?? null;
         return $dto;
     }
 }

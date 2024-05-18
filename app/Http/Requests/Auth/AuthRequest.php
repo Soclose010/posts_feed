@@ -13,4 +13,12 @@ class AuthRequest extends FormRequest
             "password" => "required|string"
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            "email" => __("email"),
+            "password" => __("password"),
+        ];
+    }
 }

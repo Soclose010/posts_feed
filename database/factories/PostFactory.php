@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Testing\Fakes\Fake;
 
 class PostFactory extends Factory
 {
@@ -10,7 +11,8 @@ class PostFactory extends Factory
     {
         return [
             "title" => fake()->text(15),
-            "body" => fake()->text(150),
+            "body" => fake()->text(1500),
+            "created_at" => fake()->dateTimeBetween(),
         ];
     }
 }
