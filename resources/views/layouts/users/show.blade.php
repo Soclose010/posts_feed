@@ -1,3 +1,4 @@
+@php use Illuminate\Support\Facades\Gate; @endphp
 @extends("layouts.main")
 
 @section("title", __("main.profile") . " $userDto->username")
