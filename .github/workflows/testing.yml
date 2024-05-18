@@ -1,4 +1,4 @@
-name: Laravel
+name: Tests
 
 on:
   push:
@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-            postgres:
-              image: postgres
-              env:
-                POSTGRES_DB: laravel-test
-                POSTGRES_PASSWORD: postgres
-              ports:
-                - 5432:5432
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: laravel-test
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
     steps:
     - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
       with:
@@ -36,7 +36,7 @@ jobs:
       run: psql postgres://postgres:postgres@localhost:5432/postgres -c 'SELECT 1;'
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
-        DB_HOST: localhost
+        DB_HOST: postgres
         DB_CONNECTION: pgsql
         DB_DATABASE: laravel-test
         DB_PORT: 5432
