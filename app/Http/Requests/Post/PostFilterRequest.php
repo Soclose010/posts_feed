@@ -4,13 +4,14 @@ namespace App\Http\Requests\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PostUpdateRequest extends FormRequest
+class PostFilterRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            "title" => "string",
-            "body" => "string"
+            "title" => "nullable|string",
+            "username" => "nullable|string",
+            "date" => "nullable|date",
         ];
     }
 
@@ -18,7 +19,8 @@ class PostUpdateRequest extends FormRequest
     {
         return [
             "title" => __("title"),
-            "body" => __("body"),
+            "username" => __("username"),
+            "date" => __("date"),
         ];
     }
 }

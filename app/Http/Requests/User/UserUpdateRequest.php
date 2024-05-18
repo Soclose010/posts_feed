@@ -16,4 +16,13 @@ class UserUpdateRequest extends FormRequest
             "old_password" => ["sometimes", "required_with:password", "same:password"],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            "username" => __("username"),
+            "email" => __("email"),
+            "password" => __("password"),
+        ];
+    }
 }

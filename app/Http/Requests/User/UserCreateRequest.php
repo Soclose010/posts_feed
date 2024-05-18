@@ -15,4 +15,13 @@ class UserCreateRequest extends FormRequest
 			"password" => ["required", "confirmed", Password::defaults()],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            "username" => __("username"),
+            "email" => __("email"),
+            "password" => __("password"),
+        ];
+    }
 }
