@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\PostFilterDto;
 use App\DataTransferObjects\PostDto;
 use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\Post\PostCreateRequest;
+use App\Http\Requests\Post\PostFilterRequest;
 use App\Http\Requests\Post\PostUpdateRequest;
 use App\Services\Post\PostService;
 use Illuminate\Http\RedirectResponse;
@@ -18,11 +20,14 @@ class PostController extends Controller
     {
     }
 
-    public function index()
+    public function index(PostFilterRequest $request)
     {
-        $postPaginator = $this->service->getPaginate(3);
+        $dto = PostFilterDto::fromFilterRequest($request);
+        $postPaginator = $this->service->getPaginate(5, $dto);
         $userId = Auth::id();
-        return view("index", compact("postPaginator", "userId"));
+        $current_locale = app()->getLocale();
+        $locales = config('app.available_locales');
+        return view("index", compact("postPaginator", "userId", "current_locale", "locales"));
     }
 
     public function create()
