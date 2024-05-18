@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -12,15 +12,16 @@
     <script>
         try {
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.setAttribute("data-bs-theme","dark");
+                document.documentElement.setAttribute("data-bs-theme", "dark");
             } else {
-                document.documentElement.setAttribute("data-bs-theme","light");
+                document.documentElement.setAttribute("data-bs-theme", "light");
             }
-        } catch (_) {}
+        } catch (_) {
+        }
     </script>
     <title>@yield("title")</title>
 </head>
-<body >
+<body>
 @yield("content")
 </body>
 </html>

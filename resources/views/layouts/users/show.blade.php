@@ -1,6 +1,6 @@
 @extends("layouts.main")
 
-@section("title", "Профиль $userDto->username")
+@section("title", __("main.profile") . " $userDto->username")
 
 @section("content")
     <div class="container d-flex flex-column justify-content-center align-items-center">
@@ -8,11 +8,17 @@
             @include("layouts.users.card", ["id" => $userDto->id])
         </div>
         <div class="row mt-5 w-75">
-            <div class="h3 text-center mt-4">Посты</div>
-            @foreach($posts as $postDto)
-                @php($username = $userDto->username)
-                @include("layouts.posts.card", compact("postDto", "username"))
+            <div class="h3 text-center mt-4">@lang("main.posts")</div>
+            @foreach($postPaginator->items() as $postDto)
+                @php
+                    $username = $postDto->username;
+                    $canEdit = Gate::allows("edit", $postDto->user_id)
+                @endphp
+                @include("layouts.posts.card", compact("postDto", "username", "canEdit"))
             @endforeach
+            <div class="pagination">
+                {{$postPaginator->links()}}
+            </div>
         </div>
     </div>
 @endsection
