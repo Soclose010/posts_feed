@@ -20,7 +20,7 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
-    container: app
+    container: posts-app
     steps:
       - uses: actions/checkout@v4
       - name: Copy .env
