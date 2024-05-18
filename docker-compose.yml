@@ -56,6 +56,20 @@ services:
         ports:
             - "5173:5173"
 
+    db-testing:
+        image: postgres:16.3-alpine
+        container_name: posts-db-testing
+        tmpfs:
+            -   /var/lib/postgresql/data
+        restart: unless-stopped
+        ports:
+            - "5433:5432"
+        environment:
+            - POSTGRES_DB=laravel-test
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=root
+        networks:
+            - posts-db-network
 networks:
     posts-db-network:
     posts-webserver-network:
