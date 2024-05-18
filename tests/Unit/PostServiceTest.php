@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\DataTransferObjects\PostDto;
+use App\DataTransferObjects\PostFilterDto;
 use App\DataTransferObjects\UserDto;
 use App\Enums\UserRole;
 use App\Models\User;
@@ -57,6 +58,151 @@ class PostServiceTest extends TestCase
         $id = Str::uuid();
         $this->expectException(NotFound::class);
         $this->postService->get($id);
+    }
+
+    public function test_get_post_with_username()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $createdPostDto = $this->postService->create($dto);
+        $postDto = $this->postService->getWithUsername($createdPostDto->id);
+        $this->assertEquals($dto->title, $postDto->title);
+        $this->assertEquals($dto->body, $postDto->body);
+        $this->assertEquals($dto->user_id, $postDto->user_id);
+        $this->assertEquals($this->user->username, $postDto->username);
+    }
+
+    public function test_get_non_exist_post_with_username()
+    {
+        $this->actingAs($this->user);
+        $id = Str::uuid();
+        $this->expectException(NotFound::class);
+        $this->postService->getWithUsername($id);
+    }
+
+    public function test_get_user_posts()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 1",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 2",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 3",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+
+        $postsPaginator = $this->postService->getUserPostsPaginate(2, $this->user->id);
+        $this->assertCount(2, $postsPaginator->getCollection());
+    }
+
+    public function test_get_posts()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 1",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 2",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 3",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+
+        $this->actingAs($this->admin);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 1",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 2",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "aboba title 3",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostFilterDto::fromArray([]);
+        $postPaginator = $this->postService->getPaginate(4, $dto);
+        $this->assertCount(4, $postPaginator->getCollection());
+    }
+
+    public function test_get_posts_with_filters()
+    {
+        $this->actingAs($this->user);
+        $dto = PostDto::fromArray([
+            "title" => "aboba",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "pepega",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "sus",
+            "body" => "body abobus",
+            "user_id" => $this->user->id
+        ]);
+        $this->postService->create($dto);
+
+        $this->actingAs($this->admin);
+        $dto = PostDto::fromArray([
+            "title" => "aboba",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "pepega",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $dto = PostDto::fromArray([
+            "title" => "sus",
+            "body" => "body abobus",
+            "user_id" => $this->admin->id
+        ]);
+        $this->postService->create($dto);
+        $postFilterDto = PostFilterDto::fromArray([
+            "title" => "a",
+            "username" => $this->user->username
+        ]);
+        $postPaginator = $this->postService->getPaginate(6, $postFilterDto);
+        $this->assertCount(2, $postPaginator->getCollection());
     }
 
     public function test_create_post()
@@ -241,7 +387,7 @@ class PostServiceTest extends TestCase
     private function createAdmin(): User
     {
         $dto = UserDto::fromArray([
-            "username" => "ivan",
+            "username" => "oleg",
             "email" => fake()->email(),
             "password" => "123",
             "role" => UserRole::Admin,
