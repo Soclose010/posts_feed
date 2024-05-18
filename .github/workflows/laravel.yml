@@ -36,7 +36,7 @@ jobs:
       run: psql postgres://postgres:postgres@localhost:5432/postgres -c 'SELECT 1;'
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
-        DB_HOST: postgres
+        DB_HOST: localhost
         DB_CONNECTION: pgsql
         DB_DATABASE: laravel-test
         DB_PORT: 5432
