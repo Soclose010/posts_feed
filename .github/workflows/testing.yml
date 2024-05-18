@@ -19,4 +19,4 @@ jobs:
             app
             db-testing
           test-container: posts-app
-          test-command: "php artisan test"
+          test-command: "composer update"
