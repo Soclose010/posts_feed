@@ -42,9 +42,9 @@ class UserController extends Controller
     public function show(string $id)
     {
         $userDto = $this->userService->get($id);
-        $posts = $this->postService->getUserPosts($id);
+        $postPaginator = $this->postService->getUserPostsPaginate(5, $id);
         $canEdit = Gate::allows("edit", $id);
-        return view('layouts.users.show', compact("userDto", "posts", "canEdit"));
+        return view('layouts.users.show', compact("userDto", "postPaginator", "canEdit"));
     }
 
     public function edit(string $id)
