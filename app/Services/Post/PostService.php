@@ -2,18 +2,24 @@
 
 namespace App\Services\Post;
 
+use App\DataTransferObjects\PipelinePostFilterDto;
+use App\DataTransferObjects\PostFilterDto;
 use App\DataTransferObjects\PostDto;
 use App\Enums\Action;
 use App\Enums\FieldName;
 use App\Exceptions\ExistedEmailException;
+use App\Filters\Post\Date;
+use App\Filters\Post\Title;
+use App\Filters\Post\Username;
 use App\Models\Post;
+use App\Models\User;
 use App\Services\Action\ActionServiceInterface;
 use App\Traits\FilterFieldsTrait;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Pipeline;
 use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class PostService
@@ -105,7 +111,8 @@ class PostService
             "title",
             "body",
             "user_id",
-            "updated_at"
+            "updated_at",
+            "created_at",
         ];
         $attributes = array_map(function ($item) use ($table) {
             return $table . "." . $item;
@@ -117,17 +124,20 @@ class PostService
         return PostDto::fromModel($post, true);
     }
 
-    public function getUserPosts(string $userId): Collection
-    {
-        $posts = Post::where("posts.user_id", $userId)->get();
-        return Collection::make($posts)->map(function ($post) {
-            return PostDto::fromModel($post);
-        });
-    }
-
-    public function getPaginate(int $count): LengthAwarePaginator
+    public function getUserPostsPaginate(int $count, string $userId): LengthAwarePaginator
     {
         $table = Post::getTableName();
+        $postPaginator = Post::where("$table.user_id", $userId)->orderBy("$table.created_at", "desc")->paginate($count);
+        $postPaginator->getCollection()->transform(function ($post) {
+            return PostDto::fromModel($post, true);
+        });
+        return $postPaginator;
+    }
+
+    public function getPaginate(int $count, PostFilterDto $filterDto): LengthAwarePaginator
+    {
+        $postTable = Post::getTableName();
+        $userTable = User::getTableName();
         $attributes = [
             "id",
             "title",
@@ -136,10 +146,20 @@ class PostService
             "updated_at",
             "created_at"
         ];
-        $attributes = array_map(function ($item) use ($table) {
-            return $table . "." . $item;
+        $attributes = array_map(function ($item) use ($postTable) {
+            return $postTable . "." . $item;
         }, $attributes);
-        $postPaginator = Post::select($attributes)->username()->orderBy("$table.created_at", "desc")->paginate($count);
+        $postQuery = Post::query();
+        $postQuery = $postQuery->select($attributes)->username();
+        $pipelineDto = PipelinePostFilterDto::fromPostFilters($filterDto, $postTable, $userTable, $postQuery);
+        $postQuery = Pipeline::send($pipelineDto)
+            ->through([
+                Title::class,
+                Username::class,
+                Date::class
+            ])
+            ->thenReturn()->builder;
+        $postPaginator = $postQuery->orderBy("$postTable.created_at", "desc")->paginate($count);
         $postPaginator->getCollection()->transform(function ($post) {
             return PostDto::fromModel($post, true);
         });
