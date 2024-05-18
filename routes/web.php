@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get("/", [PostController::class, "index"])->name("index");
-
+Route::get("/locale/{locale}", LocaleController::class)->name("locale");
 Route::controller(UserController::class)->prefix("users")->group(function (){
 
     Route::middleware("guest")->group(function (){
