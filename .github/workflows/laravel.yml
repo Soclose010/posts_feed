@@ -16,8 +16,7 @@ jobs:
               image: postgres
               env:
                 POSTGRES_DB: laravel-test
-                POSTGRES_USER: root
-                POSTGRES_PASSWORD: root
+                POSTGRES_PASSWORD: postgres
               ports:
                 - 5432:5432
     steps:
@@ -41,6 +40,6 @@ jobs:
         DB_CONNECTION: pgsql
         DB_DATABASE: laravel-test
         DB_PORT: 5432
-        DB_USERNAME: root
-        DB_PASSWORD: root
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
       run: php artisan test
