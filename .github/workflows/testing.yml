@@ -21,3 +21,5 @@ jobs:
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
       - name: Install Dependencies
         run: docker exec posts-app composer update
+      - name: Run tests
+        run: docker exec posts-app php artisan test
