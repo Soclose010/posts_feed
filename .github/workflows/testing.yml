@@ -19,7 +19,5 @@ jobs:
             db-testing
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-      - name: go to app container
-        run: docker exec -it posts-app sh
       - name: Install Dependencies
-        run: composer update
+        run: docker exec posts-app composer update
