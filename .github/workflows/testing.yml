@@ -17,7 +17,6 @@ jobs:
           services: |
             app
             db-testing
-      - name: copy .env
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
       - name: go to app container
