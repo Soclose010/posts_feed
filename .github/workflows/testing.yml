@@ -10,11 +10,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Tests
-        uses: cloudposse/github-action-docker-compose-test-run@main
+      - uses: actions/checkout@v4
+      - uses: hoverkraft-tech/compose-action@v1.5.1
         with:
-          file: docker-compose.yml
-          service: posts-app
-          command: php artisan test
+          compose-file: "./docker/docker-compose.yml"
+          services: |
+            app
+            db-testing
+      - name: copy .env
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      - name: go to app container
+        run: docker exec -it posts-app sh
+      - name: Install Dependencies
+        run: composer update
