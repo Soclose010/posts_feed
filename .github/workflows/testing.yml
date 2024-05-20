@@ -15,6 +15,6 @@ jobs:
       - name: Tests
         uses: cloudposse/github-action-docker-compose-test-run@main
         with:
-          file: test/docker-compose.yml
+          file: docker-compose.yml
           service: posts-app
           command: php artisan test
