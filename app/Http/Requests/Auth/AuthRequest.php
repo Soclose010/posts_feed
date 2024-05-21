@@ -17,8 +17,8 @@ class AuthRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            "email" => __("email"),
-            "password" => __("password"),
+            "email" => __("validation.attributes.email"),
+            "password" => __("validation.attributes.password"),
         ];
     }
 }

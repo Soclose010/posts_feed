@@ -17,8 +17,8 @@ class PostUpdateRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            "title" => __("title"),
-            "body" => __("body"),
+            "title" => __("validation.attributes.title"),
+            "body" => __("validation.attributes.body"),
         ];
     }
 }
