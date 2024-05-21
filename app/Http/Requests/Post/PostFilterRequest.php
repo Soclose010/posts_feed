@@ -18,9 +18,9 @@ class PostFilterRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            "title" => __("title"),
-            "username" => __("username"),
-            "date" => __("date"),
+            "title" => __("validation.attributes.title"),
+            "username" => __("validation.attributes.username"),
+            "date" => __("validation.attributes.date"),
         ];
     }
 }

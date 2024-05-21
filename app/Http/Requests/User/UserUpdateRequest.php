@@ -20,9 +20,9 @@ class UserUpdateRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            "username" => __("username"),
-            "email" => __("email"),
-            "password" => __("password"),
+            "username" => __("validation.attributes.username"),
+            "email" => __("validation.attributes.email"),
+            "password" => __("validation.attributes.password"),
         ];
     }
 }

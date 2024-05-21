@@ -2,7 +2,7 @@
 
 return [
     'confirmed' => 'Поле :attribute не совпадает с полем подтверждения.',
-    'current_password' => 'The password is incorrect.',
+    'current_password' => 'Пароль неверный.',
     'date' => 'Поле :attribute должно быть датой.',
     'email' => 'Поле :attribute должно быть адресом электронной почты.',
     'max' => [
@@ -23,4 +23,13 @@ return [
     'string' => 'Поле :attribute должно быть строкой.',
     'unique' => 'Такой :attribute уже занят.',
     'same' => 'Поле :attribute должно совпадать с полем :other.',
+
+    'attributes' => [
+        "username" => "имя пользователя",
+        "email" => "адрес электронной почты",
+        "password" => "пароль",
+        "title" => "заголовок",
+        "body" => "текст",
+        "date" => "дата"
+    ],
 ];
