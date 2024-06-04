@@ -8,17 +8,11 @@ use Illuminate\Support\ServiceProvider;
 
 class ActionServiceProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     */
     public function register(): void
     {
-        $this->app->bind(ActionServiceInterface::class, ActionService::class);
+        $this->app->singleton(ActionServiceInterface::class, ActionService::class);
     }
 
-    /**
-     * Bootstrap services.
-     */
     public function boot(): void
     {
         //
