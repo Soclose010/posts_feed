@@ -28,17 +28,19 @@ class UserController extends Controller
         return view('layouts.users.create');
     }
 
-    /**
-     * @throws NotFound
-     */
     public function store(UserCreateRequest $request): RedirectResponse
     {
         $dto = UserDto::fromCreateRequest($request);
         $userDto = $this->userService->create($dto);
-        $user = $this->userService->getUser($userDto->id);
+        try {
+            $user = $this->userService->getUser($userDto->id);
+        } catch (NotFound) {
+            abort(404);
+        }
         $this->authService->login($user);
         return redirect()->route("index");
     }
+
     public function show(string $id)
     {
         $userDto = $this->userService->get($id);
@@ -50,7 +52,11 @@ class UserController extends Controller
     public function edit(string $id)
     {
         Gate::authorize("edit", $id);
-        $userDto = $this->userService->get($id);
+        try {
+            $userDto = $this->userService->get($id);
+        } catch (NotFound) {
+            abort(404);
+        }
         return view("layouts.users.edit", compact("userDto"));
     }
 
@@ -59,10 +65,10 @@ class UserController extends Controller
         $dto = UserDto::fromUpdateRequest($request, $id);
         try {
             $this->userService->update($dto);
-        }
-        catch (ExistedEmailException)
-        {
+        } catch (ExistedEmailException) {
             throw new \DomainException();
+        } catch (NotFound) {
+            abort(404);
         }
         if ($dto->password !== null) {
             $this->authService->logout();
@@ -70,12 +76,14 @@ class UserController extends Controller
         return redirect()->route("index");
     }
 
-    /**
-     * @throws NotFound
-     */
     public function destroy(string $id): RedirectResponse
     {
-        $this->userService->delete($id);
+        try {
+            $this->userService->delete($id);
+        } catch (NotFound)
+        {
+            abort(404);
+        }
         $this->authService->logout();
         return redirect()->route("index");
     }
