@@ -27,20 +27,12 @@ class UserDto extends Dto
 
     public static function fromAuthRequest(AuthRequest $request): static
     {
-        $dto = new static();
-        $dto->email = $request->validated("email");
-        $dto->password = $request->validated("password");
-        return $dto;
+        return self::fromArray($request->validated());
     }
 
     public static function fromCreateRequest(UserCreateRequest $request): static
     {
-        $dto = new static();
-        $dto->username = $request->validated("username");
-        $dto->email = $request->validated("email");
-        $dto->password = $request->validated("password");
-        $dto->role = UserRole::User;
-        return $dto;
+        return self::fromArray([$request->validated(), "role" => UserRole::User]);
     }
 
     public static function fromModel(Model $model): static
@@ -60,12 +52,7 @@ class UserDto extends Dto
 
     public static function fromUpdateRequest(UserUpdateRequest $request, string $id): static
     {
-        $dto = new static();
-        $dto->id = $id;
-        $dto->username = $request->validated("username");
-        $dto->email = $request->validated("email");
-        $dto->password = $request->validated("password");
-        return $dto;
+        return self::fromArray([$request->validated(), "id" => $id]);
     }
 
     public static function fromArray(array $data): static
