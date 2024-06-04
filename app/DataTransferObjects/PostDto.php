@@ -25,7 +25,7 @@ class PostDto extends Dto
 
     public static function fromCreateRequest(PostCreateRequest $request, string $userId): static
     {
-        return self::fromArray([$request->validated(), "user_id" => $userId]);
+        return self::fromArray([...$request->validated(), "user_id" => $userId]);
     }
 
     public static function fromModel(Model $model, bool $needUsername = false): static
@@ -49,7 +49,7 @@ class PostDto extends Dto
 
     public static function fromUpdateRequest(PostUpdateRequest $request, string $id): static
     {
-        return self::fromArray([$request->validated(), "id" => $id]);
+        return self::fromArray([...$request->validated(), "id" => $id]);
     }
 
     public static function fromArray(array $data): static

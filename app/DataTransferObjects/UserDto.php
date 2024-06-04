@@ -32,7 +32,7 @@ class UserDto extends Dto
 
     public static function fromCreateRequest(UserCreateRequest $request): static
     {
-        return self::fromArray([$request->validated(), "role" => UserRole::User]);
+        return self::fromArray([...$request->validated(), "role" => UserRole::User]);
     }
 
     public static function fromModel(Model $model): static
@@ -52,7 +52,7 @@ class UserDto extends Dto
 
     public static function fromUpdateRequest(UserUpdateRequest $request, string $id): static
     {
-        return self::fromArray([$request->validated(), "id" => $id]);
+        return self::fromArray([...$request->validated(), "id" => $id]);
     }
 
     public static function fromArray(array $data): static
