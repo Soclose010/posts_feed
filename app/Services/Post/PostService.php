@@ -7,17 +7,14 @@ use App\DataTransferObjects\PostFilterDto;
 use App\DataTransferObjects\PostDto;
 use App\Enums\Action;
 use App\Enums\FieldName;
-use App\Exceptions\ExistedEmailException;
+use App\Events\Log\Post\LogActionEvent;
 use App\Filters\Post\Date;
 use App\Filters\Post\Title;
 use App\Filters\Post\Username;
 use App\Models\Post;
 use App\Models\User;
-use App\Services\Action\ActionServiceInterface;
 use App\Traits\FilterFieldsTrait;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Pipeline;
 use Spatie\FlareClient\Http\Exceptions\NotFound;
@@ -26,25 +23,14 @@ class PostService
 {
     use FilterFieldsTrait;
 
-    public function __construct(private readonly ActionServiceInterface $actionService)
-    {
-    }
-
     public function create(PostDto $dto): PostDto
     {
         $post = Post::create($this->filteredFields($dto));
-        $this->actionService::write(
-            Auth::id(),
-            Auth::id(),
-            Action::Create,
-            null,
-            $post->toJson()
-        );
+        LogActionEvent::dispatch(null, $post->toJson(), Action::Create);
         return PostDto::fromModel($post);
     }
 
     /**
-     * @throws ExistedEmailException
      * @throws NotFound
      */
     public function update(PostDto $dto): PostDto
@@ -52,18 +38,9 @@ class PostService
         $post = $this->getPost($dto->id);
         $oldPost = $post->toJson();
         Gate::authorize("edit", $post->user_id);
-        try {
-            $post = tap($post->fill($this->filteredFields($dto)))->save();
-        } catch (UniqueConstraintViolationException) {
-            throw new ExistedEmailException();
-        }
-        $this->actionService::write(
-            Auth::id(),
-            $post->user_id,
-            Action::Update,
-            $oldPost,
-            $post->toJson()
-        );
+        $post = $post->fill($this->filteredFields($dto));
+        $post->update();
+        LogActionEvent::dispatch($oldPost, $post->toJson(), Action::Update);
         return PostDto::fromModel($post);
     }
 
@@ -74,15 +51,9 @@ class PostService
     {
         $post = $this->getPost($id);
         Gate::authorize("edit", $post->user_id);
-        $oldPost = clone $post;
+        $oldPost = $post->toJson();
         $post->delete();
-        $this->actionService::write(
-            Auth::id(),
-            $oldPost->user_id,
-            Action::Delete,
-            $oldPost->toJson(),
-            null
-        );
+        LogActionEvent::dispatch($oldPost, $post->toJson(), Action::Delete);
     }
 
     /**

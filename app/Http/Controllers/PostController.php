@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\DataTransferObjects\PostFilterDto;
 use App\DataTransferObjects\PostDto;
-use App\Exceptions\ExistedEmailException;
 use App\Http\Requests\Post\PostCreateRequest;
 use App\Http\Requests\Post\PostFilterRequest;
 use App\Http\Requests\Post\PostUpdateRequest;
@@ -12,6 +11,7 @@ use App\Services\Post\PostService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class PostController extends Controller
 {
@@ -45,30 +45,43 @@ class PostController extends Controller
 
     public function show(string $id)
     {
-        $postDto = $this->service->getWithUsername($id);
-        return view("layouts.posts.show",compact("postDto"));
+        try {
+            $postDto = $this->service->getWithUsername($id);
+        } catch (NotFound) {
+            abort(404);
+        }
+        return view("layouts.posts.show", compact("postDto"));
     }
 
     public function edit(string $id)
     {
-        $postDto = $this->service->get($id);
+        try {
+            $postDto = $this->service->get($id);
+        } catch (NotFound) {
+            abort(404);
+        }
         Gate::authorize("edit", $postDto->user_id);
         return view("layouts.posts.edit", compact("postDto"));
     }
 
-    /**
-     * @throws ExistedEmailException
-     */
     public function update(PostUpdateRequest $request, string $id): RedirectResponse
     {
         $dto = PostDto::fromUpdateRequest($request, $id);
-        $postDto = $this->service->update($dto);
+        try {
+            $postDto = $this->service->update($dto);
+        } catch (NotFound) {
+            abort(404);
+        }
         return redirect()->route("posts.show", $postDto->id);
     }
 
     public function destroy(string $id): RedirectResponse
     {
-        $this->service->delete($id);
+        try {
+            $this->service->delete($id);
+        } catch (NotFound) {
+            abort(404);
+        }
         return redirect()->back();
     }
 }

@@ -4,6 +4,7 @@ namespace App\Console\Commands\User;
 
 use App\Enums\Action;
 use App\Enums\FieldName;
+use App\Events\Log\User\LogPermissionActionEvent;
 use App\Services\Action\ActionServiceInterface;
 use App\Services\User\UserService;
 use Illuminate\Console\Command;
@@ -24,17 +25,12 @@ class Upgrade extends Command
                 return;
             }
             $user = $service->getUser($this->argument("email"), FieldName::Email);
-            $oldUser = $user;
+            $actorId = $actor->id;
+            $oldUser = $user->toJson();
             $service->upgrade($user->id);
             $user = $service->getUser($user->id);
             $this->info("Success");
-            $actionService::write(
-                $actor->id,
-                $user->id,
-                Action::Upgrade,
-                $oldUser,
-                $user
-            );
+            LogPermissionActionEvent::dispatch($actorId, $oldUser, $user->toJson(), Action::Upgrade);
         } catch (NotFound) {
             $this->info("Error - some user not found by email");
         }

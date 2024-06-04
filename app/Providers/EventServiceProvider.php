@@ -2,35 +2,27 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use App\Events\Log\Post\LogActionEvent;
+use App\Events\Log\User\LogActionEvent as LogActionEventAlias;
+use App\Events\Log\User\LogPermissionActionEvent;
+use App\Listeners\Post\LogActionListener;
+use App\Listeners\User\LogActionListener as LogActionListenerAlias;
+use App\Listeners\User\LogPermissionActionListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
-    /**
-     * The event to listener mappings for the application.
-     *
-     * @var array<class-string, array<int, class-string>>
-     */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
+        LogActionEvent::class => [LogActionListener::class],
+        LogActionEventAlias::class => [LogActionListenerAlias::class],
+        LogPermissionActionEvent::class => [LogPermissionActionListener::class]
     ];
 
-    /**
-     * Register any events for your application.
-     */
     public function boot(): void
     {
         //
     }
 
-    /**
-     * Determine if events and listeners should be automatically discovered.
-     */
     public function shouldDiscoverEvents(): bool
     {
         return false;

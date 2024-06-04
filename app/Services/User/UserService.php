@@ -6,12 +6,11 @@ use App\DataTransferObjects\UserDto;
 use App\Enums\Action;
 use App\Enums\FieldName;
 use App\Enums\UserRole;
+use App\Events\Log\User\LogActionEvent;
 use App\Exceptions\ExistedEmailException;
 use App\Models\User;
-use App\Services\Action\ActionServiceInterface;
 use App\Traits\FilterFieldsTrait;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Spatie\FlareClient\Http\Exceptions\NotFound;
 
@@ -19,20 +18,10 @@ class UserService
 {
     use FilterFieldsTrait;
 
-    public function __construct(private readonly ActionServiceInterface $actionService)
-    {
-    }
-
     public function create(UserDto $dto): UserDto
     {
         $user = User::create($this->filteredFields($dto));
-        $this->actionService::write(
-            $user->id,
-            $user->id,
-            Action::Create,
-            null,
-            $user->toJson()
-        );
+        LogActionEvent::dispatch(null, $user->toJson(), Action::Create);
         return UserDto::fromModel($user);
     }
 
@@ -50,13 +39,7 @@ class UserService
         } catch (UniqueConstraintViolationException) {
             throw new ExistedEmailException();
         }
-        $this->actionService::write(
-            Auth::id(),
-            $user->id,
-            Action::Update,
-            $oldUser,
-            $user->toJson()
-        );
+        LogActionEvent::dispatch($oldUser, $user->toJson(), Action::Update);
         return UserDto::fromModel($user);
     }
 
@@ -67,14 +50,9 @@ class UserService
     {
         Gate::authorize("edit", $id);
         $user = $this->getUser($id);
+        $oldUser = $user->toJson();
         $user->delete();
-        $this->actionService::write(
-            Auth::id(),
-            $user->id,
-            Action::Delete,
-            $user->toJson(),
-            null
-        );
+        LogActionEvent::dispatch($oldUser,$user->toJson(), Action::Delete);
     }
 
     /**
@@ -85,6 +63,9 @@ class UserService
         return UserDto::fromModel($this->getUser($value, $field));
     }
 
+    /**
+     * @throws NotFound
+     */
     public function upgrade(string $id): void
     {
         $user = $this->getUser($id);

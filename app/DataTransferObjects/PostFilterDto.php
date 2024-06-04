@@ -12,11 +12,7 @@ class PostFilterDto
 
     public static function fromFilterRequest(PostFilterRequest $request): PostFilterDto
     {
-        $dto = new static();
-        $dto->title = $request->validated()['title'] ?? '';
-        $dto->username = $request->validated()['username'] ?? '';
-        $dto->date = $request->validated()['date'] ?? '';
-        return $dto;
+        return self::fromArray($request->validated());
     }
 
     public static function fromArray(array $data): PostFilterDto
